@@ -22,7 +22,7 @@
 
         <Button
             android:id="@+id/set_default_button"
-            android:style="@style/ButtonPrimary"
+            style="@style/ButtonPrimary"
             android:layout_width="240dp"
             android:layout_height="48dp"
             android:layout_marginBottom="16dp"
@@ -35,7 +35,7 @@
 
         <Button
             android:id="@+id/from_gallery_button"
-            android:style="@style/ButtonPrimary"
+            style="@style/ButtonPrimary"
             android:layout_width="240dp"
             android:layout_height="48dp"
             android:background="@drawable/button_bg"

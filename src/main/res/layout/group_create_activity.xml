@@ -11,52 +11,62 @@
 
     <LinearLayout
         android:id="@+id/group_image_holder"
-        android:layout_width="fill_parent"
-        android:layout_height="106dp"
-        android:paddingStart="14dp"
-        android:paddingEnd="18dp"
-        android:paddingTop="14dp"
+        android:layout_width="match_parent"
+        android:layout_height="112dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/avatar"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_marginEnd="10dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginEnd="16dp"
             android:contentDescription="@string/group_avatar" />
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/group_name"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_gravity="center_vertical"
-            android:padding="10dp"
+            android:background="@drawable/telegram_input_capsule_bg"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:lines="1"
             android:maxLength="255"
             android:inputType="textAutoCorrect"
-            android:hint="@string/group_name">
+            android:hint="@string/group_name"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textColorHint="?android:attr/textColorSecondary"
+            android:textSize="16sp">
             <requestFocus />
         </androidx.appcompat.widget.AppCompatEditText>
     </LinearLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/chat_description_container"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="12dp"
+        android:orientation="vertical">
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/chat_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/telegram_input_capsule_bg"
+            android:padding="16dp"
             android:gravity="top|start"
             android:hint="@string/chat_description"
             android:inputType="textMultiLine"
-            android:maxLines="3" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:textColor="?android:attr/textColorPrimary"
+            android:textColorHint="?android:attr/textColorSecondary"
+            android:maxLines="3"
+            android:textSize="15sp" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/chat_hints"
@@ -65,11 +75,11 @@
         android:gravity="start"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
-        android:textSize="18sp"
+        android:layout_marginTop="18dp"
+        android:textSize="15sp"
+        android:textColor="?android:attr/textColorSecondary"
         android:text="@string/chat_new_channel_hint" />
 
-    <!-- clipToPadding is needed so ViewUtil.applyWindowInsets() works properly -->
     <ListView
         android:id="@+id/selected_contacts_list"
         android:clipToPadding="false"

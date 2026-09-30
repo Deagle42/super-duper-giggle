@@ -11,7 +11,7 @@ import androidx.appcompat.app.ActionBar;
 import chat.delta.rpc.types.SecurejoinSource;
 import chat.delta.rpc.types.SecurejoinUiPath;
 import com.b44t.messenger.DcContext;
-import com.google.android.material.textfield.TextInputEditText;
+import android.widget.EditText;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import org.thoughtcrime.securesms.ConversationActivity;
@@ -26,8 +26,8 @@ public class NewContactActivity extends PassphraseRequiredActionBarActivity {
   public static final String ADDR_EXTRA = "contact_addr";
   public static final String CONTACT_ID_EXTRA = "contact_id";
 
-  private TextInputEditText nameInput;
-  private TextInputEditText addrInput;
+  private EditText nameInput;
+  private EditText addrInput;
   private DcContext dcContext;
 
   @Override

@@ -6,16 +6,18 @@
         android:key="pref_view_log"
         android:title="@string/pref_view_log" />
 
+    <PreferenceCategory android:title="@string/export_sessions_title">
+        <Preference
+            android:key="pref_export_sessions_button"
+            android:title="@string/export_sessions_title"
+            android:summary="@string/export_sessions_summary" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/pref_server">
 
         <Preference
             android:key="pref_relay_list_button"
             android:title="@string/transports" />
-
-        <Preference
-            android:key="pref_export_sessions_button"
-            android:title="@string/export_sessions_title"
-            android:summary="@string/export_sessions_summary" />
 
         <Preference
             android:key="proxy_settings_button"

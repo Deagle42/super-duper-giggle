@@ -77,8 +77,8 @@ public class WelcomeActivity extends BaseActionBarActivity
     // add padding to avoid content hidden behind system bars
     ViewUtil.applyWindowInsets(findViewById(R.id.content_container));
 
-    TextInputEditText emailInput = findViewById(R.id.email_text);
-    TextInputEditText passwordInput = findViewById(R.id.password_text);
+    android.widget.EditText emailInput = findViewById(R.id.email_text);
+    android.widget.EditText passwordInput = findViewById(R.id.password_text);
     View secondaryContainer = findViewById(R.id.secondary_options_container);
     TextView secondaryToggle = findViewById(R.id.secondary_options_toggle);
 

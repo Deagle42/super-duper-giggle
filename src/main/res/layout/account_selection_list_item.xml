@@ -4,37 +4,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="60dp"
+    android:layout_height="64dp"
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:focusable="true"
     android:background="?attr/conversation_list_item_background"
     android:paddingLeft="16dp"
-    android:paddingStart="16dp">
+    android:paddingStart="16dp"
+    android:paddingRight="16dp"
+    android:paddingEnd="16dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="45dp"
-        android:layout_height="50dp">
-
-        <org.thoughtcrime.securesms.components.AvatarView
-            android:id="@+id/contact_photo_image"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:contentDescription="@null" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <org.thoughtcrime.securesms.components.AvatarView
+        android:id="@+id/contact_photo_image"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@null" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginLeft="11dp"
-        android:layout_marginStart="11dp"
-        android:paddingRight="16dp"
-        android:paddingEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:paddingRight="12dp"
+        android:paddingEnd="12dp"
         android:orientation="vertical">
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -42,29 +35,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:drawablePadding="5dp"
-            android:ellipsize="marquee"
-            android:singleLine="true"
-            android:fontFamily="sans-serif"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:fontFamily="sans-serif-medium"
             android:textSize="16sp"
-            tools:text="Frieeeeeeedrich Nieeeeeeeeeetzsche" />
-        <!-- Attention: Using android:maxLines="1", if the name is an emoji followed by a long word and
-            the chat is muted, then the long word is not shown at all (instead of using `…`). That's why we use android:singleLine="true" -->
+            android:textColor="?attr/conversation_list_item_contact_color"
+            tools:text="Friedrich Nietzsche" />
 
         <LinearLayout
             android:id="@+id/addr_container"
             android:orientation="horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp">
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/addr_or_tag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:ellipsize="marquee"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textSize="14sp"
-                android:fontFamily="sans-serif-light"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif"
+                android:textColor="?attr/conversation_list_item_date_color"
                 tools:text="user@example.com" />
 
         </LinearLayout>
@@ -80,9 +73,7 @@
         android:id="@+id/enable_switch"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:paddingStart="16dp"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingEnd="16dp" />
+        android:paddingStart="12dp"
+        android:paddingLeft="12dp" />
 
 </org.thoughtcrime.securesms.accounts.AccountSelectionListItem>

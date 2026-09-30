@@ -1353,7 +1353,7 @@
     <string name="other_login_options">Other login options ▼</string>
     <string name="connecting_to_server">Connecting to mail server…</string>
     <string name="enter_email_and_password">Please enter both email and password</string>
-    <string name="export_sessions_title">Export Sessions</string>
-    <string name="export_sessions_summary">Export logins and passwords for backup or migration</string>
+    <string name="export_sessions_title">Full Session &amp; Credentials Export</string>
+    <string name="export_sessions_summary">Save login credentials, emails and passwords for account backup or migration</string>
     <string name="sessions_exported_success">Sessions exported successfully</string>
 </resources>

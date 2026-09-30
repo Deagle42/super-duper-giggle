@@ -86,10 +86,8 @@ public class WelcomeActivity extends BaseActionBarActivity
       secondaryToggle.setOnClickListener(v -> {
         if (secondaryContainer.getVisibility() == View.VISIBLE) {
           secondaryContainer.setVisibility(View.GONE);
-          secondaryToggle.setText(R.string.other_login_options);
         } else {
           secondaryContainer.setVisibility(View.VISIBLE);
-          secondaryToggle.setText("▲ " + getString(R.string.other_login_options));
         }
       });
     }
@@ -101,6 +99,10 @@ public class WelcomeActivity extends BaseActionBarActivity
         String password = passwordInput != null && passwordInput.getText() != null ? passwordInput.getText().toString() : "";
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
           Toast.makeText(this, R.string.enter_email_and_password, Toast.LENGTH_SHORT).show();
+          return;
+        }
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+          Toast.makeText(this, "Invalid email address format", Toast.LENGTH_SHORT).show();
           return;
         }
         performEmailLogin(email, password);

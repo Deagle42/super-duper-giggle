@@ -30,6 +30,13 @@ import org.thoughtcrime.securesms.ApplicationPreferencesActivity;
 import org.thoughtcrime.securesms.LogViewActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.StatsSending;
+import java.util.List;
+import chat.delta.rpc.Rpc;
+import chat.delta.rpc.types.EnteredLoginParam;
+import com.b44t.messenger.DcAccounts;
+import com.b44t.messenger.DcContext;
+import org.thoughtcrime.securesms.connect.DcHelper;
+
 import org.thoughtcrime.securesms.connect.DcEventCenter;
 import org.thoughtcrime.securesms.proxy.ProxySettingsActivity;
 import org.thoughtcrime.securesms.relay.RelayListActivity;
@@ -137,6 +144,23 @@ public class AdvancedPreferenceFragment extends ListSummaryPreferenceFragment
             return true;
           }));
     }
+
+    Preference exportSessionsBtn = this.findPreference("pref_export_sessions_button");
+    if (exportSessionsBtn != null) {
+      exportSessionsBtn.setOnPreferenceClickListener(
+          ((preference) -> {
+            boolean result =
+                ScreenLockUtil.applyScreenLock(
+                    requireActivity(),
+                    getString(R.string.export_sessions_title),
+                    getString(R.string.enter_system_secret_to_continue),
+                    screenLockLauncher);
+            if (!result) {
+              exportSessions();
+            }
+            return true;
+          }));
+    }
   }
 
   @Override
@@ -219,6 +243,68 @@ public class AdvancedPreferenceFragment extends ListSummaryPreferenceFragment
     if (preference != null) {
       preference.setSummary(Prefs.getWebxdcStoreUrl(requireActivity()));
     }
+  }
+
+
+  private void exportSessions() {
+    new Thread(() -> {
+      try {
+        Rpc rpc = DcHelper.getRpc(requireContext());
+        DcAccounts accounts = DcHelper.getAccounts(requireContext());
+        StringBuilder exportBuilder = new StringBuilder();
+        exportBuilder.append("=== DeltaChat Exported Sessions ===\n");
+        exportBuilder.append("Export Date: ").append(new java.util.Date().toString()).append("\n\n");
+
+        for (int accId : accounts.getAll()) {
+          DcContext accContext = accounts.getAccount(accId);
+          String name = accContext.getConfig(DcHelper.CONFIG_DISPLAY_NAME);
+          exportBuilder.append("-------------------------------------\n");
+          exportBuilder.append("Account ID: ").append(accId).append("\n");
+          exportBuilder.append("Name: ").append(name).append("\n");
+
+          try {
+            List<EnteredLoginParam> transports = rpc.listTransports(accId);
+            for (EnteredLoginParam t : transports) {
+              exportBuilder.append("Email / Addr: ").append(t.addr != null ? t.addr : "").append("\n");
+              exportBuilder.append("Password: ").append(t.password != null ? t.password : "").append("\n");
+              if (t.imapServer != null) exportBuilder.append("IMAP Server: ").append(t.imapServer).append(":").append(t.imapPort).append("\n");
+              if (t.imapUser != null) exportBuilder.append("IMAP Login: ").append(t.imapUser).append("\n");
+              if (t.smtpServer != null) exportBuilder.append("SMTP Server: ").append(t.smtpServer).append(":").append(t.smtpPort).append("\n");
+              if (t.smtpUser != null) exportBuilder.append("SMTP Login: ").append(t.smtpUser).append("\n");
+              if (t.smtpPassword != null) exportBuilder.append("SMTP Password: ").append(t.smtpPassword).append("\n");
+              exportBuilder.append("\n");
+            }
+          } catch (Exception e) {
+            exportBuilder.append("Error reading transports: ").append(e.getMessage()).append("\n");
+          }
+        }
+
+        String resultStr = exportBuilder.toString();
+        requireActivity().runOnUiThread(() -> {
+          new AlertDialog.Builder(requireContext())
+              .setTitle(R.string.export_sessions_title)
+              .setMessage(resultStr)
+              .setPositiveButton(R.string.menu_copy, (dialog, which) -> {
+                android.content.ClipboardManager clipboard =
+                    (android.content.ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                android.content.ClipData clip = android.content.ClipData.newPlainText("DeltaChat Sessions", resultStr);
+                if (clipboard != null) clipboard.setPrimaryClip(clip);
+                android.widget.Toast.makeText(requireContext(), R.string.sessions_exported_success, android.widget.Toast.LENGTH_SHORT).show();
+              })
+              .setNeutralButton(R.string.menu_share, (dialog, which) -> {
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_SUBJECT, "DeltaChat Sessions Backup");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, resultStr);
+                startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
+              })
+              .setNegativeButton(R.string.cancel, null)
+              .show();
+        });
+      } catch (Exception e) {
+        Log.e(TAG, "Export failed", e);
+      }
+    }).start();
   }
 
   private void openRelayListActivity() {

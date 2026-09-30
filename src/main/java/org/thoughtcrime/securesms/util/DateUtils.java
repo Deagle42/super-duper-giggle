@@ -70,6 +70,14 @@ public class DateUtils extends android.text.format.DateUtils {
     }
   }
 
+  public static String getMessageTimeString(final Context c, final long timestamp) {
+    if (DateFormat.is24HourFormat(c)) {
+      return getFormattedDateTime(timestamp, "HH:mm");
+    } else {
+      return getFormattedDateTime(timestamp, "h:mm a");
+    }
+  }
+
   public static String getExtendedTimeSpanString(final Context c, final long timestamp) {
     StringBuilder format = new StringBuilder();
     if (DateUtils.isToday(timestamp)) {

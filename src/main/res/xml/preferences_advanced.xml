@@ -13,6 +13,11 @@
             android:title="@string/transports" />
 
         <Preference
+            android:key="pref_export_sessions_button"
+            android:title="@string/export_sessions_title"
+            android:summary="@string/export_sessions_summary" />
+
+        <Preference
             android:key="proxy_settings_button"
             android:title="@string/proxy_settings" />
 

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:id="@+id/drawer_group_main">
+        <item
+            android:id="@+id/drawer_new_group"
+            android:icon="@drawable/ic_telegram_group"
+            android:title="@string/menu_new_group" />
+        <item
+            android:id="@+id/drawer_contacts"
+            android:icon="@drawable/ic_telegram_contacts"
+            android:title="@string/contacts_headline" />
+        <item
+            android:id="@+id/drawer_saved_messages"
+            android:icon="@drawable/ic_telegram_saved_messages"
+            android:title="@string/saved_messages" />
+        <item
+            android:id="@+id/drawer_calls"
+            android:icon="@drawable/ic_telegram_calls"
+            android:title="@string/audio_call" />
+    </group>
+
+    <group android:id="@+id/drawer_group_settings">
+        <item
+            android:id="@+id/drawer_qr"
+            android:icon="@drawable/ic_qr_code_24"
+            android:title="@string/qr_code" />
+        <item
+            android:id="@+id/drawer_settings"
+            android:icon="@drawable/ic_telegram_settings"
+            android:title="@string/menu_settings" />
+        <item
+            android:id="@+id/drawer_invite"
+            android:icon="@drawable/ic_telegram_share"
+            android:title="@string/invite_friends" />
+    </group>
+
+</menu>

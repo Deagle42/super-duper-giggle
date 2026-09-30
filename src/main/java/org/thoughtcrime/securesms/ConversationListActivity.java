@@ -56,6 +56,14 @@ import androidx.core.view.MenuCompat;
 import chat.delta.rpc.types.SecurejoinSource;
 import chat.delta.rpc.types.SecurejoinUiPath;
 import com.amulyakhare.textdrawable.TextDrawable;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import com.google.android.material.navigation.NavigationView;
+import org.thoughtcrime.securesms.GroupCreateActivity;
+import org.thoughtcrime.securesms.ContactSelectionActivity;
+import org.thoughtcrime.securesms.ApplicationPreferencesActivity;
+import org.thoughtcrime.securesms.AllMediaActivity;
+
 import com.b44t.messenger.DcAccounts;
 import com.b44t.messenger.DcContact;
 import com.b44t.messenger.DcContext;
@@ -108,6 +116,14 @@ public class ConversationListActivity extends PassphraseRequiredActionBarActivit
   private ImageView searchAction;
   private ViewGroup fragmentContainer;
   private ViewGroup selfAvatarContainer;
+  private DrawerLayout drawerLayout;
+  private NavigationView navigationView;
+  private ImageView drawerMenuToggle;
+  private AvatarView drawerAvatar;
+  private TextView drawerName;
+  private TextView drawerEmail;
+  private ImageView drawerNightModeToggle;
+
 
   /**
    * used to store temporarily scanned QR to pass it back to QrCodeHandler when ScreenLockUtil is
@@ -182,6 +198,31 @@ public class ConversationListActivity extends PassphraseRequiredActionBarActivit
 
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
+    drawerLayout = findViewById(R.id.drawer_layout);
+    drawerMenuToggle = findViewById(R.id.drawer_menu_toggle);
+    if (drawerMenuToggle != null && drawerLayout != null) {
+      drawerMenuToggle.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+    }
+    navigationView = findViewById(R.id.navigation_view);
+    if (navigationView != null) {
+      View headerView = navigationView.getHeaderView(0);
+      if (headerView != null) {
+        drawerAvatar = headerView.findViewById(R.id.drawer_avatar);
+        drawerName = headerView.findViewById(R.id.drawer_name);
+        drawerEmail = headerView.findViewById(R.id.drawer_email);
+        drawerNightModeToggle = headerView.findViewById(R.id.drawer_night_mode_toggle);
+        if (drawerAvatar != null) {
+          drawerAvatar.setOnClickListener(v -> {
+            if (drawerLayout != null) drawerLayout.closeDrawer(GravityCompat.START);
+            AccountManager.getInstance().showSwitchAccountMenu(this, false);
+          });
+        }
+        if (drawerNightModeToggle != null) {
+          drawerNightModeToggle.setOnClickListener(v -> toggleNightMode());
+        }
+      }
+      navigationView.setNavigationItemSelectedListener(item -> handleDrawerNavigation(item.getItemId()));
+    }
     selfAvatar = findViewById(R.id.self_avatar);
     selfAvatarContainer = findViewById(R.id.self_avatar_container);
     unreadIndicator = findViewById(R.id.unread_indicator);
@@ -205,6 +246,10 @@ public class ConversationListActivity extends PassphraseRequiredActionBarActivit
             new OnBackPressedCallback(true) {
               @Override
               public void handleOnBackPressed() {
+                if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                  drawerLayout.closeDrawer(GravityCompat.START);
+                  return;
+                }
                 if (searchToolbar.isVisible()) {
                   searchToolbar.collapse();
                 } else {
@@ -389,8 +434,63 @@ public class ConversationListActivity extends PassphraseRequiredActionBarActivit
     }
   }
 
+  
+  private void toggleNightMode() {
+    boolean isDark = DynamicTheme.isDarkTheme(this);
+    Prefs.setStringPreference(this, Prefs.THEME_PREF, isDark ? DynamicTheme.LIGHT : DynamicTheme.DARK);
+    DynamicTheme.setDefaultDayNightMode(this);
+    recreate();
+  }
+
+  private boolean handleDrawerNavigation(int itemId) {
+    if (drawerLayout != null) {
+      drawerLayout.closeDrawer(GravityCompat.START);
+    }
+    if (itemId == R.id.drawer_new_group) {
+      startActivity(new Intent(this, GroupCreateActivity.class));
+      return true;
+    } else if (itemId == R.id.drawer_contacts) {
+      startActivity(new Intent(this, ContactSelectionActivity.class));
+      return true;
+    } else if (itemId == R.id.drawer_saved_messages) {
+      int chatId = DcHelper.getContext(this).createChatByContactId(DcContact.DC_CONTACT_ID_SELF);
+      openConversation(chatId, -1);
+      return true;
+    } else if (itemId == R.id.drawer_calls) {
+      startActivity(new Intent(this, AllMediaActivity.class));
+      return true;
+    } else if (itemId == R.id.drawer_qr) {
+      Intent intent = new IntentIntegrator(this).setCaptureActivity(QrActivity.class).createScanIntent();
+      qrScannerLauncher.launch(intent);
+      return true;
+    } else if (itemId == R.id.drawer_settings) {
+      startActivity(new Intent(this, ApplicationPreferencesActivity.class));
+      return true;
+    } else if (itemId == R.id.drawer_invite) {
+      shareInvite();
+      return true;
+    }
+    return false;
+  }
+
   public void refreshAvatar() {
     if (selfAvatarContainer == null) return;
+    if (drawerAvatar != null) {
+      DcContext dcContext = DcHelper.getContext(this);
+      String name = dcContext.getConfig(DcHelper.CONFIG_DISPLAY_NAME);
+      if (TextUtils.isEmpty(name)) {
+        name = getString(R.string.unnamed);
+      }
+      String email = dcContext.getConfig("configured_mail_user");
+      if (TextUtils.isEmpty(email)) {
+        email = dcContext.getConfig("addr");
+      }
+      DcContact self = dcContext.getContact(DcContact.DC_CONTACT_ID_SELF);
+      drawerAvatar.setAvatar(GlideApp.with(this), new Recipient(this, self, name), false);
+      if (drawerName != null) drawerName.setText(name);
+      if (drawerEmail != null) drawerEmail.setText(email);
+    }
+
 
     if (isRelayingMessageContent(this)) {
       selfAvatarContainer.setVisibility(View.GONE);

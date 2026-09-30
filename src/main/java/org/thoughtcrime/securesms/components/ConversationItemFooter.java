@@ -126,7 +126,7 @@ public class ConversationItemFooter extends LinearLayout {
   private void presentDate(@NonNull DcMsg dcMsg) {
     dateView.forceLayout();
     dateView.setText(
-        DateUtils.getExtendedRelativeTimeSpanString(getContext(), dcMsg.getTimestamp()));
+        DateUtils.getMessageTimeString(getContext(), dcMsg.getTimestamp()));
   }
 
   private void presentDeliveryStatus(@NonNull DcMsg messageRecord, boolean isOutChannel) {

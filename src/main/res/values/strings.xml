@@ -1345,4 +1345,15 @@
     <string name="update_downloading">Downloading %1$s …</string>
     <string name="update_now">Update Now</string>
     <string name="update_install_permission_explain">To install the update, please first allow Delta Chat to install apps in the system settings.</string>
+
+    <!-- Telegram UI / Login strings -->
+    <string name="login_title">Log in by Email</string>
+    <string name="login_subheader">Please enter your email and password to log in</string>
+    <string name="login_button_text">Log In</string>
+    <string name="other_login_options">Other login options ▼</string>
+    <string name="connecting_to_server">Connecting to mail server…</string>
+    <string name="enter_email_and_password">Please enter both email and password</string>
+    <string name="export_sessions_title">Export Sessions</string>
+    <string name="export_sessions_summary">Export logins and passwords for backup or migration</string>
+    <string name="sessions_exported_success">Sessions exported successfully</string>
 </resources>

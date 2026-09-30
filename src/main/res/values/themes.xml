@@ -27,8 +27,8 @@
 
         <item name="theme_type">dark</item>
         <item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat.Dark</item>
-        <item name="colorPrimary">@color/gray95</item>
-        <item name="colorPrimaryDark">@color/gray95</item>
+        <item name="colorPrimary">@color/telegram_dark_primary</item>
+        <item name="colorPrimaryDark">@color/telegram_dark_primary_dark</item>
 
         <item name="profile_toolbar_background">@color/black</item>
         <item name="profile_toolbar_foreground">@color/white</item>
@@ -107,8 +107,8 @@
 
         <item name="conversation_item_date_line_color">@color/core_light_45</item>
         <item name="conversation_item_quote_text_color">@color/core_light_90</item>
-        <item name="conversation_item_sticky_date_background">@drawable/sticky_date_header_background_light</item>
-        <item name="conversation_item_sticky_date_text_color">@color/core_light_60</item>
+        <item name="conversation_item_sticky_date_background">@drawable/sticky_date_header_background_telegram</item>
+        <item name="conversation_item_sticky_date_text_color">@color/white</item>
 
         <item name="quick_camera_icon">@drawable/quick_camera_light</item>
         <item name="quick_mic_icon">@drawable/ic_mic_grey600_24dp</item>
@@ -153,8 +153,8 @@
         <item name="android:navigationBarColor">@color/black</item>
         <item name="actionBarStyle">@style/TextSecure.DarkActionBar</item>
         <item name="actionBarTabBarStyle">@style/TextSecure.DarkActionBar.TabBar</item>
-        <item name="colorPrimary">@color/gray95</item>
-        <item name="colorPrimaryDark">@color/gray95</item>
+        <item name="colorPrimary">@color/telegram_dark_primary</item>
+        <item name="colorPrimaryDark">@color/telegram_dark_primary_dark</item>
         <item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat.Dark</item>
         <item name="actionModeBackground">@color/gray95</item>
         <item name="android:textColor">@color/text_color_dark_theme</item>
@@ -181,15 +181,15 @@
         <item name="floating_mini_bg">@drawable/floating_mini_bg_dark</item>
 
         <!-- dark theme -->
-        <item name="conversation_item_incoming_bubble_color">@color/black</item>
+        <item name="conversation_item_incoming_bubble_color">@color/telegram_incoming_bubble_dark</item>
         <!-- <item name="conversation_item_incoming_bubble_border_color">#80414347</item> -->
         <item name="conversation_item_incoming_text_primary_color">@color/core_dark_05</item>
-        <item name="conversation_item_incoming_text_secondary_color">@color/core_dark_05</item>
+        <item name="conversation_item_incoming_text_secondary_color">@color/telegram_subtext_dark</item>
 
-        <item name="conversation_item_outgoing_bubble_color">@color/gray70</item>
+        <item name="conversation_item_outgoing_bubble_color">@color/telegram_outgoing_bubble_dark</item>
         <!-- <item name="conversation_item_outgoing_bubble_border_color">#80364e59</item> -->
         <item name="conversation_item_outgoing_text_primary_color">@color/core_dark_05</item>
-        <item name="conversation_item_outgoing_text_secondary_color">@color/light_pink</item>
+        <item name="conversation_item_outgoing_text_secondary_color">@color/telegram_outgoing_label_dark</item>
         <item name="conversation_item_background">@drawable/conversation_item_background</item>
         <item name="conversation_item_background_animated">@drawable/conversation_item_background_animated</item>
         <item name="conversation_item_update_bg_color">@color/universal_overlay</item>
@@ -198,8 +198,8 @@
         <item name="conversation_item_sent_indicator_text_background">@drawable/conversation_item_sent_indicator_text_shape_dark</item>
         <item name="conversation_item_date_line_color">@color/core_dark_55</item>
         <item name="conversation_item_quote_text_color">@color/core_dark_05</item>
-        <item name="conversation_item_sticky_date_background">@drawable/sticky_date_header_background_dark</item>
-        <item name="conversation_item_sticky_date_text_color">@color/core_dark_30</item>
+        <item name="conversation_item_sticky_date_background">@drawable/sticky_date_header_background_telegram</item>
+        <item name="conversation_item_sticky_date_text_color">@color/white</item>
 
         <item name="contact_list_divider">@drawable/contact_list_divider_dark</item>
         <item name="contact_list_divider_color">@color/gray10</item>
@@ -209,7 +209,7 @@
         <item name="dialog_background_color">@color/background_material_dark</item>
 
         <item name="fab_color">@color/def_primary_lite</item>
-        <item name="input_panel_bg_color">@color/gray95</item>
+        <item name="input_panel_bg_color">@color/telegram_dark_primary</item>
         <item name="close_icon_color">@color/gray70</item>
 
         <!-- dark theme -->

@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:top="2px"
-        android:bottom="2px">
+        android:top="1dp"
+        android:bottom="1dp">
         <shape android:shape="rectangle">
             <corners
-                android:topLeftRadius="@dimen/message_corner_radius"
-                android:topRightRadius="@dimen/message_corner_radius"
-                android:bottomRightRadius="@dimen/message_corner_radius" />
-            <!-- read issue: https://github.com/deltachat/deltachat-android/issues/480 before introducing
-                an attr here. -->
+                android:topLeftRadius="16dp"
+                android:topRightRadius="16dp"
+                android:bottomRightRadius="16dp"
+                android:bottomLeftRadius="4dp" />
             <solid android:color="@color/white" />
         </shape>
     </item>

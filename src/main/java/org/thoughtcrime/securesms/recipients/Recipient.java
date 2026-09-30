@@ -183,15 +183,20 @@ public class Recipient {
   }
 
   public int getFallbackAvatarColor() {
-    int rgb = 0x00808080;
+    int id = 0;
     if (dcChat != null) {
-      rgb = dcChat.getColor();
+      id = dcChat.getId();
     } else if (dcContact != null) {
-      rgb = dcContact.getColor();
-    } else if (vContact != null) {
-      rgb = Color.parseColor(vContact.color);
+      id = dcContact.getId();
     }
-    return Color.argb(0xFF, Color.red(rgb), Color.green(rgb), Color.blue(rgb));
+    if (id != 0) {
+      return org.thoughtcrime.securesms.util.TelegramColorHelper.getAvatarColor(id);
+    }
+    String name = getName();
+    if (!android.text.TextUtils.isEmpty(name)) {
+      return org.thoughtcrime.securesms.util.TelegramColorHelper.getAvatarColorForName(name);
+    }
+    return org.thoughtcrime.securesms.util.TelegramColorHelper.AVATAR_COLORS[0];
   }
 
   public synchronized @NonNull Drawable getFallbackAvatarDrawable(Context context) {

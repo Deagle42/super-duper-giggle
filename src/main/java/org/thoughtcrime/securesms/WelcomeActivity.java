@@ -13,6 +13,15 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.util.Linkify;
+import android.text.TextUtils;
+import android.widget.Toast;
+import android.view.View;
+import com.google.android.material.textfield.TextInputEditText;
+import org.thoughtcrime.securesms.relay.EditRelayActivity;
+import chat.delta.rpc.Rpc;
+import chat.delta.rpc.types.EnteredLoginParam;
+import chat.delta.rpc.types.Socket;
+
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -68,6 +77,41 @@ public class WelcomeActivity extends BaseActionBarActivity
     // add padding to avoid content hidden behind system bars
     ViewUtil.applyWindowInsets(findViewById(R.id.content_container));
 
+    TextInputEditText emailInput = findViewById(R.id.email_text);
+    TextInputEditText passwordInput = findViewById(R.id.password_text);
+    View secondaryContainer = findViewById(R.id.secondary_options_container);
+    TextView secondaryToggle = findViewById(R.id.secondary_options_toggle);
+
+    if (secondaryToggle != null && secondaryContainer != null) {
+      secondaryToggle.setOnClickListener(v -> {
+        if (secondaryContainer.getVisibility() == View.VISIBLE) {
+          secondaryContainer.setVisibility(View.GONE);
+          secondaryToggle.setText(R.string.other_login_options);
+        } else {
+          secondaryContainer.setVisibility(View.VISIBLE);
+          secondaryToggle.setText("▲ " + getString(R.string.other_login_options));
+        }
+      });
+    }
+
+    View loginBtn = findViewById(R.id.login_button);
+    if (loginBtn != null) {
+      loginBtn.setOnClickListener(v -> {
+        String email = emailInput != null && emailInput.getText() != null ? emailInput.getText().toString().trim() : "";
+        String password = passwordInput != null && passwordInput.getText() != null ? passwordInput.getText().toString() : "";
+        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
+          Toast.makeText(this, R.string.enter_email_and_password, Toast.LENGTH_SHORT).show();
+          return;
+        }
+        performEmailLogin(email, password);
+      });
+    }
+
+    View manualBtn = findViewById(R.id.manual_setup_button);
+    if (manualBtn != null) {
+      manualBtn.setOnClickListener(v -> startActivity(new Intent(this, EditRelayActivity.class)));
+    }
+
     findViewById(R.id.signup_button)
         .setOnClickListener(
             (v) -> startActivity(new Intent(this, InstantOnboardingActivity.class)));
@@ -100,6 +144,57 @@ public class WelcomeActivity extends BaseActionBarActivity
             });
 
     DcHelper.maybeShowMigrationError(this);
+  }
+
+
+  private void performEmailLogin(String email, String password) {
+    ProgressDialog progress = new ProgressDialog(this);
+    progress.setMessage(getString(R.string.connecting_to_server));
+    progress.setCancelable(false);
+    progress.show();
+
+    new Thread(() -> {
+      try {
+        int accId = DcHelper.getContext(this).getAccountId();
+        Rpc rpc = DcHelper.getRpc(this);
+
+        EnteredLoginParam param = new EnteredLoginParam();
+        param.addr = email;
+        param.password = password;
+
+        String domain = "";
+        if (email.contains("@")) {
+          domain = email.substring(email.indexOf("@") + 1).toLowerCase();
+        }
+
+        // Preset for Mail.ru domains or automatic
+        if (domain.equals("mail.ru") || domain.equals("inbox.ru") || domain.equals("list.ru") || domain.equals("bk.ru")) {
+          param.imapServer = "imap.mail.ru";
+          param.imapPort = 993;
+          param.imapSecurity = Socket.ssl;
+          param.smtpServer = "smtp.mail.ru";
+          param.smtpPort = 465;
+          param.smtpSecurity = Socket.ssl;
+        }
+
+        rpc.setConfig(accId, DcHelper.CONFIG_FORCE_ENCRYPTION, "1");
+        rpc.addOrUpdateTransport(accId, param);
+
+        Util.runOnMain(() -> {
+          progress.dismiss();
+          Intent intent = new Intent(this, ConversationListActivity.class);
+          intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+          startActivity(intent);
+          finish();
+        });
+      } catch (Exception e) {
+        Log.e(TAG, "Login failed", e);
+        Util.runOnMain(() -> {
+          progress.dismiss();
+          maybeShowConfigurationError(this, e.getMessage());
+        });
+      }
+    }).start();
   }
 
   private void showSignInDialogWithPermission() {

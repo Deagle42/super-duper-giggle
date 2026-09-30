@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+    <!-- DEFAULT -->
+    <color name="def_primary">@color/purple_primary</color>
+    <color name="def_primary_lite">@color/purple_primary_lite</color>
+    <color name="def_primary_alpha33">@color/purple_primary_alpha33</color>
+    <color name="def_accent">@color/purple_accent</color>
+    <color name="def_outgoing_bubble">@color/purple_outgoing_bubble</color>
+    <color name="def_outgoing_label">@color/purple_outgoing_label</color>
+    <color name="def_unreadcount">@color/purple_unreadcount</color>
+    <!-- ========== -->
+
+    <!-- PURPLE -->
+    <color name="purple_primary">#ff7b00c8</color>
+    <color name="purple_primary_lite">#ff7b00c8</color>
+    <color name="purple_primary_alpha33">#557b00c8</color>
+    <color name="purple_accent">#9646c8</color>
+    <color name="purple_outgoing_bubble">#fffff9d9</color>
+    <color name="purple_outgoing_label">#ff7b00c8</color>
+    <color name="purple_unreadcount">#7b00c8</color>
+    <!-- ========== -->
+
+    <!-- GREEN -->
+    <color name="green_primary">#ff009788</color>
+    <color name="green_primary_lite">#ff009788</color>
+    <color name="green_primary_alpha33">#55009788</color>
+    <color name="green_accent">#00b7a5</color>
+    <color name="green_outgoing_bubble">#fffff9d9</color>
+    <color name="green_outgoing_label">#ff009788</color>
+    <color name="green_unreadcount">#00b7a5</color>
+    <!-- ========== -->
+
+    <!-- BLUE -->
+    <color name="blue_primary">#ff517da2</color>
+    <color name="blue_primary_lite">#ff517da2</color>
+    <color name="blue_primary_alpha33">#55517da2</color>
+    <color name="blue_accent">#486d8f</color>
+    <color name="blue_outgoing_bubble">#fffff9d9</color>
+    <color name="blue_outgoing_label">#ff2f97d6</color>
+    <color name="blue_unreadcount">#1ab7c8</color>
+    <!-- ========== -->
+
+    <!-- RED -->
+    <color name="red_primary">#ffb61c1c</color>
+    <color name="red_primary_lite">#ffb61c1c</color>
+    <color name="red_primary_alpha33">#55b61c1c</color>
+    <color name="red_accent">#a41a1a</color>
+    <color name="red_outgoing_bubble">#fffff9d9</color>
+    <color name="red_outgoing_label">#ffce303e</color>
+    <color name="red_unreadcount">#d51431</color>
+    <!-- ========== -->
+
+    <!-- PINK -->
+    <color name="pink_primary">#ffc84595</color>
+    <color name="pink_primary_lite">#ffc84595</color>
+    <color name="pink_primary_alpha33">#55c84595</color>
+    <color name="pink_accent">#a03779</color>
+    <color name="pink_outgoing_bubble">#fffff9d9</color>
+    <color name="pink_outgoing_label">#ffa03779</color>
+    <color name="pink_unreadcount">#ff25b7</color>
+    <!-- ========== -->
+
+    <!-- GRAY -->
+    <color name="gray_primary">#ff415e6b</color>
+    <color name="gray_primary_lite">#4c6e7d</color>
+    <color name="gray_primary_alpha33">#55415e6b</color>
+    <color name="gray_accent">#3b5561</color>
+    <color name="gray_outgoing_bubble">#fffff9d9</color>
+    <color name="gray_outgoing_label">#ff415e6b</color>
+    <color name="gray_unreadcount">#415e6b</color>
+    <!-- ========== -->
+
+
+    <color name="primary_alpha_focus">#882090ea</color>
+
+
+    <color name="unread_count">#ff3792fc</color>
+    <color name="unread_count_muted">#b6b6bb</color>
+    <color name="unread_count_muted_dark">#3b3b3b</color>
+
+    <color name="white">#ffffffff</color>
+    <color name="black">#ff000000</color>
+    <color name="gray5">#ffeeeeee</color>
+    <color name="gray10">#ffdddddd</color>
+    <color name="gray12">#ffe0e0e0</color>
+    <color name="gray13">#ffababab</color>
+    <color name="gray20">#ffcccccc</color>
+    <color name="gray50">#ff808080</color>
+    <color name="gray65">#ff595959</color>
+    <color name="gray70">#ff4d4d4d</color>
+    <color name="gray78">#ff383838</color>
+    <color name="gray95">#ff111111</color>
+    <color name="light_green">#ffefffde</color>
+    <color name="green">#ff70b15c</color>
+    <color name="light_pink">#ffcdb7b5</color>
+
+    <color name="transparent_black_30">#30000000</color>
+
+    <color name="conversation_compose_divider">#32000000</color>
+
+    <color name="action_mode_status_bar">@color/gray50</color>
+    <color name="touch_highlight">#22000000</color>
+    <color name="touch_highlight_strong">#5C4CB8DB</color>
+
+    <color name="sticker_selected_color">#99ffffff</color>
+    <color name="transparent">#00FFFFFF</color>
+    <color name="transparent_black">#00000000</color>
+
+    <color name="MediaOverview_Media_selected_overlay">#88000000</color>
+
+    <color name="dummy_avatar_color">#505050</color>
+    <color name="status_dot_online">#34c759</color>
+    <color name="status_dot_connecting">#ffcc00</color>
+    <color name="status_dot_offline">#bdbdbd</color>
+    <color name="slidearrow_color">#999999</color>
+
+    <color name="universal_overlay">#55444444</color>
+
+    <color name="pinned_bg">#eeeeee</color>
+    <color name="pinned_bg_dark">#222222</color>
+
+    <!-- unknown_sender fits in dark mode and lite mode (also other chat/contact colors fit in both modes);
+        unknown_sender is used for the sender-name/quote-bar if the sender is unknown -->
+    <color name="unknown_sender">#ff999999</color>
+
+    <color name="reaction_pill_background">@color/white</color>
+    <color name="reaction_pill_border">#88dddddd</color>
+    <color name="reaction_pill_text_color">#545863</color>
+    <color name="reaction_pill_background_selected">@color/reaction_pill_background</color>
+    <color name="reaction_pill_border_selected">?attr/colorPrimary</color>
+    <color name="reaction_pill_text_color_selected">@color/reaction_pill_text_color</color>
+
+    <color name="delete_account_item_bg">#eeeeee</color>
+
+    <color name="calls_button_foreground">#FFFFFF</color>
+    <color name="calls_button_background">#6B6B6B</color>
+    <color name="calls_red">#FF0017</color>
+    <color name="calls_green">#00AD00</color>
+</resources>

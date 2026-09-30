@@ -1,0 +1,75 @@
+name: Upload Release APK
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      match: ${{ steps.check-tag.outputs.match }}
+    steps:
+      - id: check-tag
+        run: |
+          if [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
+              echo ::set-output name=match::true
+          fi
+
+  build:
+    needs: check
+    if: needs.check.outputs.match == 'true'
+    name: Upload Release APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+      - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        with:
+          working-directory: jni/deltachat-core-rust
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          packages: 'platform-tools'
+      - uses: nttld/setup-ndk@ed92fe6cadad69be94a966a7ee3271275e62f779 # v1.6.0
+        id: setup-ndk
+        with:
+          ndk-version: "r29"
+
+      - name: Compile core
+        env:
+          ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: |
+          export PATH="${PATH}:${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/:${ANDROID_NDK_ROOT}"
+          ./scripts/install-toolchains.sh && ./scripts/ndk-make.sh
+
+      - name: Build APK
+        run: |
+          mkdir -p ~/.gradle
+          echo -n ${{ secrets.KEYSTORE_FILE }} | base64 -d >> ~/keystore.jks
+          echo "DC_RELEASE_STORE_FILE=$HOME/keystore.jks" >> ~/.gradle/gradle.properties
+          echo "DC_RELEASE_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> ~/.gradle/gradle.properties
+          echo "DC_RELEASE_KEY_ALIAS_FDROID=${{ secrets.ALIAS_FDROID }}" >> ~/.gradle/gradle.properties
+          echo "DC_RELEASE_KEY_ALIAS_GPLAY=${{ secrets.ALIAS_GPLAY }}" >> ~/.gradle/gradle.properties
+          echo "DC_RELEASE_KEY_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> ~/.gradle/gradle.properties
+          mkdir dist
+          for abi in armeabi-v7a arm64-v8a x86 x86_64; do ./gradlew -PABI_FILTER=$abi assembleFossRelease; mv build/outputs/apk/foss/release/*.apk dist/; done
+          mv build/outputs/mapping/fossRelease/mapping.txt dist/mapping-foss.txt
+          ./gradlew assembleGplayRelease
+          mv build/outputs/apk/gplay/release/*universal*.apk dist/ArcaneChat-gplay.apk
+          mv build/outputs/mapping/gplayRelease/mapping.txt dist/mapping-gplay.txt
+
+      - name: Release on GitHub
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          body: '[<img src="store/get-it-on-gplay.png" alt="Get it on Google Play" height="48">](https://play.google.com/store/apps/details?id=com.github.arcanechat) [<img src="store/get-it-on-fdroid.png" alt="Get it on F-Droid" height="48">](https://f-droid.org/packages/chat.delta.lite) [<img src="store/get-it-on-github.png" alt="Get it on GitHub" height="48">](https://github.com/ArcaneChat/android/releases/latest/download/ArcaneChat-gplay.apk)'
+          prerelease: ${{ contains(github.event.ref, '-beta') }}
+          fail_on_unmatched_files: true
+          files: |
+            dist/*

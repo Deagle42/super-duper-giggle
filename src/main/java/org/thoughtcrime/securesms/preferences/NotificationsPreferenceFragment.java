@@ -1,0 +1,399 @@
+package org.thoughtcrime.securesms.preferences;
+
+import static android.app.Activity.RESULT_OK;
+import static org.thoughtcrime.securesms.notifications.UnifiedPushUtils.PUSH_ERROR_ACTION;
+
+import android.Manifest;
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
+import android.text.TextUtils;
+import android.util.Log;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import org.thoughtcrime.securesms.ApplicationPreferencesActivity;
+import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.connect.DcHelper;
+import org.thoughtcrime.securesms.connect.KeepAliveService;
+import org.thoughtcrime.securesms.notifications.FcmReceiveService;
+import org.thoughtcrime.securesms.notifications.UnifiedPushUtils;
+import org.thoughtcrime.securesms.service.UnifiedPushService;
+import org.thoughtcrime.securesms.util.Prefs;
+
+public class NotificationsPreferenceFragment extends ListSummaryPreferenceFragment
+    implements Preference.OnPreferenceChangeListener {
+
+  private static final String TAG = "NotificationsPrefFrag";
+
+  private CheckBoxPreference ignoreBattery;
+  private CheckBoxPreference notificationsEnabled;
+  private Preference selectDistributor;
+  private CheckBoxPreference mentionNotifEnabled;
+  private CheckBoxPreference notifyCalls;
+  private CheckBoxPreference reliableService;
+  private ActivityResultLauncher<Intent> ringtonePickerLauncher;
+
+  private BroadcastReceiver pushEventReceiver =
+      new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+          resumeUi();
+        }
+      };
+
+  @Override
+  public void onCreate(Bundle paramBundle) {
+    super.onCreate(paramBundle);
+
+    ringtonePickerLauncher =
+        registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+              if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                Uri uri =
+                    result.getData().getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+
+                if (Settings.System.DEFAULT_NOTIFICATION_URI.equals(uri)) {
+                  Prefs.removeNotificationRingtone(getContext());
+                } else {
+                  Prefs.setNotificationRingtone(getContext(), uri != null ? uri : Uri.EMPTY);
+                }
+
+                initializeRingtoneSummary(findPreference(Prefs.RINGTONE_PREF));
+              }
+            });
+
+    this.findPreference(Prefs.LED_COLOR_PREF)
+        .setOnPreferenceChangeListener(new ListSummaryListener());
+    this.findPreference(Prefs.RINGTONE_PREF)
+        .setOnPreferenceChangeListener(new RingtoneSummaryListener());
+    this.findPreference(Prefs.NOTIFICATION_PRIVACY_PREF)
+        .setOnPreferenceChangeListener(new ListSummaryListener());
+    this.findPreference(Prefs.NOTIFICATION_PRIORITY_PREF)
+        .setOnPreferenceChangeListener(new ListSummaryListener());
+
+    this.findPreference(Prefs.RINGTONE_PREF)
+        .setOnPreferenceClickListener(
+            preference -> {
+              Uri current = Prefs.getNotificationRingtone(getContext());
+              if (current.toString().isEmpty()) current = null; // silent
+
+              Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+              intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+              intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true);
+              intent.putExtra(
+                  RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+              intent.putExtra(
+                  RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI,
+                  Settings.System.DEFAULT_NOTIFICATION_URI);
+              intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current);
+              ringtonePickerLauncher.launch(intent);
+
+              return true;
+            });
+
+    initializeListSummary((ListPreference) findPreference(Prefs.LED_COLOR_PREF));
+    initializeListSummary((ListPreference) findPreference(Prefs.NOTIFICATION_PRIVACY_PREF));
+    initializeListSummary((ListPreference) findPreference(Prefs.NOTIFICATION_PRIORITY_PREF));
+
+    initializeRingtoneSummary(findPreference(Prefs.RINGTONE_PREF));
+
+    ignoreBattery = this.findPreference("pref_ignore_battery_optimizations");
+    if (ignoreBattery != null) {
+      ignoreBattery.setVisible(needsIgnoreBatteryOptimizations());
+      ignoreBattery.setOnPreferenceChangeListener(
+          (preference, newValue) -> {
+            requestToggleIgnoreBatteryOptimizations();
+            return true;
+          });
+    }
+
+    // reliableService is just used for displaying the actual value
+    // of the reliable service preference that is managed via
+    // Prefs.setReliableService() and Prefs.reliableService()
+    reliableService = this.findPreference("pref_reliable_service2");
+    if (reliableService != null) {
+      reliableService.setOnPreferenceChangeListener(this);
+    }
+
+    notificationsEnabled = this.findPreference("pref_enable_notifications");
+    if (notificationsEnabled != null) {
+      notificationsEnabled.setOnPreferenceChangeListener(
+          (preference, newValue) -> {
+            boolean enabled = (Boolean) newValue;
+            dcContext.setMuted(!enabled);
+            notificationsEnabled.setSummary(getSummary(getContext(), false));
+            setUnifiedPushDistributorPref(getContext());
+            return true;
+          });
+    }
+
+    selectDistributor = this.findPreference("pref_unifiedpush_distrib");
+    if (selectDistributor != null) {
+      selectDistributor.setOnPreferenceClickListener(
+          (preference) -> {
+            Activity activity = getActivity();
+            if (activity != null) {
+              UnifiedPushUtils.tryPickUnifiedPushDistributor(
+                  activity,
+                  res -> {
+                    if (res) {
+                      setUnifiedPushDistributorPref(getContext());
+                    }
+                  });
+            }
+            return true;
+          });
+    }
+
+    mentionNotifEnabled = this.findPreference("pref_enable_mention_notifications");
+    if (mentionNotifEnabled != null) {
+      mentionNotifEnabled.setOnPreferenceChangeListener(
+          (preference, newValue) -> {
+            boolean enabled = (Boolean) newValue;
+            dcContext.setMentionsEnabled(enabled);
+            return true;
+          });
+    }
+
+    notifyCalls = this.findPreference("pref_notify_calls");
+    if (notifyCalls != null) {
+      notifyCalls.setOnPreferenceChangeListener(
+          (preference, newValue) -> {
+            boolean enabled = (Boolean) newValue;
+            dcContext.setConfig("who_can_call_me", enabled ? "1" : "2");
+            return true;
+          });
+    }
+  }
+
+  @Override
+  public void onCreatePreferences(@Nullable Bundle savedInstanceState, String rootKey) {
+    addPreferencesFromResource(R.xml.preferences_notifications);
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    ((ApplicationPreferencesActivity) getActivity())
+        .getSupportActionBar()
+        .setTitle(R.string.pref_notifications);
+
+    try {
+      ContextCompat.registerReceiver(
+          requireContext(),
+          pushEventReceiver,
+          new IntentFilter(PUSH_ERROR_ACTION),
+          ContextCompat.RECEIVER_NOT_EXPORTED);
+    } catch (IllegalStateException e) {
+      Log.e(TAG, "Could not access context", e);
+    }
+    resumeUi();
+  }
+
+  private void resumeUi() {
+    // update ignoreBattery in onResume() to reflects changes done in the system settings
+    ignoreBattery.setChecked(isIgnoringBatteryOptimizations());
+    notificationsEnabled.setChecked(!dcContext.isMuted());
+    notificationsEnabled.setSummary(getSummary(getContext(), false));
+    setUnifiedPushDistributorPref(getContext());
+    mentionNotifEnabled.setChecked(dcContext.isMentionsEnabled());
+    notifyCalls.setChecked(!"2".equals(dcContext.getConfig("who_can_call_me")));
+
+    // set without altering "unset" state of the preference
+    reliableService.setOnPreferenceChangeListener(null);
+    reliableService.setChecked(Prefs.reliableService(getActivity()));
+    reliableService.setOnPreferenceChangeListener(this);
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
+    try {
+      requireContext().unregisterReceiver(pushEventReceiver);
+    } catch (IllegalStateException e) {
+      Log.e(TAG, "Could not access context", e);
+    }
+  }
+
+  @Override
+  public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
+    Context context = getContext();
+    if (context == null) {
+      Log.w(TAG, "onPreferenceChange called without context");
+      return true;
+    }
+    boolean enabled = (Boolean) newValue;
+    Prefs.setReliableService(context, enabled);
+    if (enabled) {
+      KeepAliveService.startSelf(context);
+      if (UnifiedPushUtils.countAvailableDistributors(context) != 0) {
+        // If reliable service is set when the system has an UnifiedPush distributor:
+        // we disable UnifiedPush.
+        Prefs.disableUnifiedPush(context);
+        UnifiedPushService.unregister(context);
+      }
+    } else {
+      context.stopService(new Intent(context, KeepAliveService.class));
+      // Re-enable UnifiedPush when the user disable the foreground service.
+      // This also allow users who have disabled UnifiedPush by mistake to reset it.
+      Prefs.enableUnifiedPush(context);
+      // If the build supports UnifiedPush, we init it
+      UnifiedPushUtils.mayInitUnifiedPush(
+          getActivity(),
+          s -> {
+            notificationsEnabled.setSummary(getSummary(context, false));
+            setUnifiedPushDistributorPref(getContext());
+          });
+    }
+    notificationsEnabled.setSummary(getSummary(context, false));
+    setUnifiedPushDistributorPref(getContext());
+    return true;
+  }
+
+  private class RingtoneSummaryListener implements Preference.OnPreferenceChangeListener {
+    @Override
+    public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
+      Uri value = (Uri) newValue;
+
+      if (value == null || TextUtils.isEmpty(value.toString())) {
+        preference.setSummary(R.string.pref_silent);
+      } else {
+        Ringtone tone = RingtoneManager.getRingtone(getActivity(), value);
+
+        if (tone != null) {
+          String summary;
+          try {
+            summary = tone.getTitle(getActivity());
+          } catch (SecurityException e) {
+            // this could happen in some phones when user selects ringtone from
+            // external storage and later removes the read from external storage permission
+            // and later this method is called from initializeRingtoneSummary()
+            summary = "<no access>";
+            Log.w(TAG, e);
+          }
+          preference.setSummary(summary);
+        }
+      }
+
+      return true;
+    }
+  }
+
+  private void setUnifiedPushDistributorPref(Context context) {
+    if (selectDistributor != null) {
+      String currentDistributor = UnifiedPushUtils.getDistributorName(context);
+      if (!dcContext.isMuted()
+          && !Prefs.reliableService(context)
+          && !Prefs.unifiedPushError(context)
+          && currentDistributor != null
+          && UnifiedPushUtils.countAvailableDistributors(context) > 1) {
+        selectDistributor.setVisible(true);
+        selectDistributor.setSummary(currentDistributor);
+      } else {
+        selectDistributor.setVisible(false);
+        selectDistributor.setSummary("");
+      }
+    }
+  }
+
+  private boolean needsIgnoreBatteryOptimizations() {
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+  }
+
+  private boolean isIgnoringBatteryOptimizations() {
+    if (!needsIgnoreBatteryOptimizations()) {
+      return true;
+    }
+    PowerManager pm = (PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
+    if (pm.isIgnoringBatteryOptimizations(getActivity().getPackageName())) {
+      return true;
+    }
+    return false;
+  }
+
+  private void requestToggleIgnoreBatteryOptimizations() {
+    Context context = getActivity();
+    boolean openManualSettings = true;
+
+    try {
+      if (needsIgnoreBatteryOptimizations()
+          && !isIgnoringBatteryOptimizations()
+          && ContextCompat.checkSelfPermission(
+                  context, Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+              == PackageManager.PERMISSION_GRANTED) {
+        Intent intent =
+            new Intent(
+                Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                Uri.parse("package:" + context.getPackageName()));
+        context.startActivity(intent);
+        openManualSettings = false;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    if (openManualSettings && needsIgnoreBatteryOptimizations()) {
+      // fire ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS if
+      // ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS fails
+      // or if isIgnoringBatteryOptimizations() is already true (there is no intent to re-enable
+      // battery optimizations)
+      Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+      context.startActivity(intent);
+    }
+  }
+
+  private void initializeRingtoneSummary(Preference pref) {
+    RingtoneSummaryListener listener =
+        (RingtoneSummaryListener) pref.getOnPreferenceChangeListener();
+    Uri uri = Prefs.getNotificationRingtone(getContext());
+
+    listener.onPreferenceChange(pref, uri);
+  }
+
+  public static CharSequence getSummary(Context context) {
+    return getSummary(context, true);
+  }
+
+  public static CharSequence getSummary(Context context, boolean detailed) {
+    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+        || notificationManager.areNotificationsEnabled()) {
+      if (DcHelper.getContext(context).isMuted()) {
+        return detailed ? context.getString(R.string.off) : "";
+      } else if (Prefs.reliableService(context)) {
+        return detailed ? context.getString(R.string.on) : "";
+      } else if (FcmReceiveService.getToken() != null) {
+        return detailed ? context.getString(R.string.on) : "";
+        // The summary may be updated as soon as we toggle off
+        // the "unreliable bg service": we may have not yet received
+        // the push endpoint => we rely on savedDistributor to know.
+      } else if (UnifiedPushUtils.hasPushDistributor(context, false)
+          && !Prefs.unifiedPushError(context)) {
+        // Always show
+        return context.getString(R.string.pref_notification_desc_using_unifiedpush);
+      } else {
+        return "⚠️ " + context.getString(R.string.unreliable_bg_notifications);
+      }
+    } else {
+      return "⚠️ " + context.getString(R.string.disabled_in_system_settings);
+    }
+  }
+}

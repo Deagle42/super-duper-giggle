@@ -284,7 +284,7 @@ public class AdvancedPreferenceFragment extends ListSummaryPreferenceFragment
           new AlertDialog.Builder(requireContext())
               .setTitle(R.string.export_sessions_title)
               .setMessage(resultStr)
-              .setPositiveButton(R.string.menu_copy, (dialog, which) -> {
+              .setPositiveButton(R.string.menu_copy_to_clipboard, (dialog, which) -> {
                 android.content.ClipboardManager clipboard =
                     (android.content.ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
                 android.content.ClipData clip = android.content.ClipData.newPlainText("DeltaChat Sessions", resultStr);

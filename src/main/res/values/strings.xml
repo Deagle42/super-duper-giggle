@@ -1347,7 +1347,7 @@
     <string name="update_install_permission_explain">To install the update, please first allow Delta Chat to install apps in the system settings.</string>
 
     <!-- Telegram UI / Login strings -->
-    <string name="login_title">Log in by Email</string>
+    <string name="tg_login_heading">Log in by Email</string>
     <string name="login_subheader">Please enter your email and password to log in</string>
     <string name="login_button_text">Log In</string>
     <string name="other_login_options">Other login options ▼</string>

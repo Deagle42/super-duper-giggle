@@ -34,7 +34,7 @@
             android:id="@+id/login_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/login_title"
+            android:text="@string/tg_login_heading"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="22sp"
             android:textStyle="bold"

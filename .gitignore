@@ -8,7 +8,6 @@ gen/
 /gplay/
 .idea/
 *.iml
-*.so
 out
 tests
 lint.xml
@@ -40,11 +39,6 @@ ndkArch
 # no vi tmp files
 *.swp
 
-jni/x86
-jni/x86_64
-jni/armeabi
-jni/armeabi-v7a
-jni/arm64-v8a
 
 artwork/drawable*/
 artwork/mipmap-*/
